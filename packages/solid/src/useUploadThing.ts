@@ -2,6 +2,7 @@ import { createSignal } from "solid-js";
 
 import {
   INTERNAL_DO_NOT_USE__fatalClientError,
+  removeExifData,
   resolveMaybeUrlArg,
   UploadThingError,
 } from "@uploadthing/shared";
@@ -59,6 +60,17 @@ export const INTERNAL_uploadthingHookGen = <
     const startUpload = async (...args: FuncInput) => {
       const files = (await opts?.onBeforeUploadBegin?.(args[0])) ?? args[0];
       const input = args[1];
+
+      if (!opts?.exif) {
+        // Strip any EXIF data from the files.
+        for (let i = 0; i < files.length; i++) {
+          try {
+            files[i] = await removeExifData(files[i]);
+          } catch {
+            // Obviously not a valid image file, so we can ignore it.
+          }
+        }
+      }
 
       setUploading(true);
       opts?.onUploadProgress?.(0);

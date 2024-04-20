@@ -4,3 +4,4 @@ export * from "./file-types";
 export * from "./error";
 export * from "./component-utils";
 export * from "./crypto";
+export * from "./exif";
