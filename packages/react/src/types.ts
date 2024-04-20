@@ -71,6 +71,10 @@ export type UseUploadthingProps<
    * to your server
    */
   headers?: HeadersInit | (() => MaybePromise<HeadersInit>);
+  /**
+   * Defines if exif data should be stripped from images
+   */
+  exif?: boolean;
 };
 
 export type UploadthingComponentProps<

@@ -127,6 +127,7 @@ export function UploadDropzone<
       onUploadError: $props.onUploadError,
       onUploadBegin: $props.onUploadBegin,
       onBeforeUploadBegin: $props.onBeforeUploadBegin,
+      exif: $props.exif,
     },
   );
 

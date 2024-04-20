@@ -35,6 +35,36 @@ const useEndpointMetadata = (url: URL, endpoint: string) => {
   return (maybeServerData ?? data)?.find((x) => x.slug === endpoint);
 };
 
+// Defines extensions where EXIF data can be present.
+const EXIF_EXTENSIONS = /\.(jpg|jpeg|tiff|tif|png)$/i;
+
+// Remove the EXIF data from a image file.
+const removeExifData = (f: File) => {
+  // Check if the filename needs exif data removed.
+  if (!EXIF_EXTENSIONS.test(f.name)) {
+    return Promise.resolve(f);
+  }
+
+  // Strip the EXIF data using canvas.
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d")!;
+  const img = new Image();
+  img.src = URL.createObjectURL(f);
+  return new Promise<File>((resolve, reject) => {
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      canvas.toBlob((blob) => {
+        resolve(new File([blob!], f.name, { type: f.type }));
+      });
+    };
+    img.onerror = (e) => {
+      reject(e);
+    };
+  });
+};
+
 export const INTERNAL_uploadthingHookGen = <
   TRouter extends FileRouter,
 >(initOpts: {
@@ -79,6 +109,17 @@ export const INTERNAL_uploadthingHookGen = <
     const startUpload = useEvent(async (...args: FuncInput) => {
       const files = (await opts?.onBeforeUploadBegin?.(args[0])) ?? args[0];
       const input = args[1];
+
+      if (!opts?.exif) {
+        // Strip any EXIF data from the files.
+        for (let i = 0; i < files.length; i++) {
+          try {
+            files[i] = await removeExifData(files[i]);
+          } catch {
+            // Obviously not a valid image file, so we can ignore it.
+          }
+        }
+      }
 
       setUploading(true);
       opts?.onUploadProgress?.(0);

@@ -136,6 +136,7 @@ export function UploadButton<
       onUploadError: $props.onUploadError,
       onUploadBegin: $props.onUploadBegin,
       onBeforeUploadBegin: $props.onBeforeUploadBegin,
+      exif: $props.exif,
     },
   );
 
